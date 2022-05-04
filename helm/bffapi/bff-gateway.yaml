@@ -1,0 +1,69 @@
+apiVersion: "security.istio.io/v1beta1"
+kind: "PeerAuthentication"
+metadata:
+  name: "default"
+  namespace: "istio-system"
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: "AuthorizationPolicy"
+metadata:
+  name: "allow-nothing"
+  namespace: default
+spec: {}
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: "AuthorizationPolicy"
+metadata:
+  name: bffapi
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bffapi
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/api/Analytics"]
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: "AuthorizationPolicy"
+metadata:
+  name: "bffbillingapi"
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bffbillingapi
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            paths: ["/health"]
+            methods: ["GET"]
+        - operation:
+            paths: ["/api/Billing"]
+            methods: ["GET"]
+---
+apiVersion: "security.istio.io/v1beta1"
+kind: "AuthorizationPolicy"
+metadata:
+  name: "bffconsumptionapi"
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: bffconsumptionapi
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            paths: ["/health"]
+            methods: ["GET"]
+        - operation:
+            paths: ["/api/Consumption"]
+            methods: ["GET"]

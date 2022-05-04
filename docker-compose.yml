@@ -1,0 +1,97 @@
+version: '3.4'
+
+services:
+  bffapi:
+    image: ${DOCKER_REGISTRY-}bffapi:${Branch_Name:-local}
+    build:
+      context: .
+      dockerfile: BFFApi/Dockerfile
+    ports:
+      - 1700:1700
+    environment:
+      - ASPNETCORE_URLS=http://+:1700
+      - ASPNETCORE_ENVIRONMENT=Development
+      - BILLING_PORT=1701
+      - CONSUMPTION_PORT=1702
+    hostname: bffapi
+    depends_on:
+      - bffbillingapi
+      - bffconsumptionapi
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "apt-get update -y && apt-get install -y curl && curl --fail http://localhost:1700/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+    networks:
+      - containerizedbff-backend
+  
+  bffbillingapi:
+    image: ${DOCKER_REGISTRY-}bffbillingapi:${Branch_Name:-local}
+    hostname: bffbillingapi
+    build:
+      context: .
+      dockerfile: BFFBillingApi/Dockerfile
+    ports:
+      - 1701:1701
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "apt-get update -y && apt-get install -y curl && curl --fail http://localhost:1701/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 10s
+    environment:
+      - ASPNETCORE_URLS=http://+:1701
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - containerizedbff-backend
+
+  bffconsumptionapi:
+    image: ${DOCKER_REGISTRY-}bffconsumptionapi:${Branch_Name:-local}
+    hostname: bffconsumptionapi
+    build:
+      context: .
+      dockerfile: BFFConsumptionApi/Dockerfile
+    restart: unless-stopped
+    ports:
+      - 1702:1702
+    healthcheck:
+      test: ["CMD-SHELL", "apt-get update -y && apt-get install -y curl && curl --fail http://localhost:1702/health || exit 1"]
+      interval: 10s
+      retries: 5
+      start_period: 20s
+      timeout: 10s    
+    environment:
+      - ASPNETCORE_URLS=http://+:1702
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - containerizedbff-backend
+
+  frontendsimulator:
+    image: ${DOCKER_REGISTRY-}frontendsimulator:${Branch_Name:-local}
+    build:
+      context: .
+      dockerfile: FrontendSimulator/Dockerfile
+    environment:
+      - API_PORT=1700
+      - SLEEP_DURATION=100
+    networks:
+      - containerizedbff-backend
+
+  seq:
+    image: datalust/seq:latest
+    ports:
+      - 5341:80
+    volumes:
+      - /datadrive:/data
+    environment:
+      - ACCEPT_EULA=Y
+    hostname: log
+    networks:
+      - containerizedbff-backend
+
+networks:
+  containerizedbff-backend:
+    external: true

@@ -1,0 +1,26 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "bffapi": "StartDebugging",
+        "bffbillingapi": "StartDebugging",
+        "bffconsumptionapi": "StartDebugging",
+        "frontendsimulator": "StartDebugging",
+        "seq": "StartWithoutDebugging"
+      }
+    },
+    "test": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "bffapi": "StartDebugging",
+        "bffbillingapi": "StartDebugging",
+        "bffconsumptionapi": "StartDebugging",
+        "frontendsimulator": "DoNotStart",
+        "seq": "StartWithoutDebugging"
+      }
+    }
+  }
+}
